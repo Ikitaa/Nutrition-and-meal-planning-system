@@ -434,7 +434,7 @@ input:focus {
             </div>
             <div class="field-group">
                 <label for="terms">
-                    <input type="checkbox" id="terms" name="terms"> I agree to the <a href="terms.html" target="_blank">Terms and Conditions</a>
+                    <input type="checkbox" id="terms" name="terms"> I agree to the <a href="terms.php" target="_blank">Terms and Conditions</a>
                 </label> 
                 <?php echo printError($error, 'terms'); ?> 
             </div>

@@ -19,6 +19,7 @@ $result = mysqli_query($conn, $sql);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SmartDiet-Grocery</title>
     <link rel="icon" href="logo.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
     body {
         font-family: Arial, sans-serif;
@@ -140,7 +141,9 @@ $result = mysqli_query($conn, $sql);
             <input type="text" name="search_term" placeholder="Search for groceries..." value="<?php echo htmlspecialchars($searchTerm); ?>">
         </form>
         <div class="cart-icon">
-            <i class="fas fa-shopping-cart"></i>
+        <a href="view_cart.php">
+            <i class="fa fa-shopping-cart" style="font-size: 28px; color: #28a745;"></i> <!-- Dynamic cart count -->
+        </a>
         </div>
     </div>
 </header>

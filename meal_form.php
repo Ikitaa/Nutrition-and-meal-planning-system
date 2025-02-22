@@ -1,3 +1,46 @@
+<?php
+session_start();
+
+// Ensure the user is logged in (this assumes you are using a session for login).
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
+// Connect to the database
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "smartdiet";
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Get the user's date of birth
+$user_id = $_SESSION['user_id'];  // Assuming user_id is stored in session
+$sql = "SELECT dateofbirth FROM register WHERE id = '$user_id'";
+$result = $conn->query($sql);
+
+if ($result->num_rows > 0) {
+    // Fetch the user's date of birth
+    $row = $result->fetch_assoc();
+    $dob = $row['dateofbirth'];
+
+    // Calculate the user's age
+    $dob = new DateTime($dob);
+    $today = new DateTime();
+    $age = $today->diff($dob)->y;
+} else {
+    // Handle the case where the user is not found
+    $age = '';
+}
+
+$conn->close();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

@@ -276,12 +276,13 @@ $health_data_json = json_encode($health_data);
 }
 
 .meal img {
-    width: 100%;
-    max-height: 200px;
-    object-fit: cover;
+    width: 100%; /* Make the image fill the width of its container */
+    height: 200px; /* Set a fixed height for the image */
+    object-fit: contain; /* Ensure the image maintains its aspect ratio */
     border-radius: 8px;
     margin-top: 10px;
 }
+
 
 .no-plan {
     color: red;
@@ -338,8 +339,7 @@ $health_data_json = json_encode($health_data);
     <!-- Cart Icon -->
     <div class="cart">
         <a href="view_cart.php">
-            <i class="fa fa-shopping-cart" style="font-size: 28px; color: #28a745;"></i>
-            <span class="cart-badge">3</span> <!-- Dynamic cart count -->
+            <i class="fa fa-shopping-cart" style="font-size: 28px; color: #28a745;"></i> <!-- Dynamic cart count -->
         </a>
     </div>
 

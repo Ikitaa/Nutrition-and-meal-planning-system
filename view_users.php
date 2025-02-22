@@ -31,86 +31,127 @@ $result = $connection->query($sql);
     <title>SmartDiet - View Users</title>
     <link rel="icon" href="logo.png" type="image/png">
     <style>
-        body {
-            font-family: 'Poppins', Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f8f9fa;
-        }
-        header {
-            background-color: #28a745;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        header img {
-            height: 40px; /* Adjust logo height */
-            margin-right: 10px; /* Add space between the logo and text */
-        }
-        .container {
-            margin: 20px auto;
-            max-width: 1200px;
-            padding: 20px;
-            background-color: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            margin-bottom: 50px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        table th, table td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: center;
-        }
-        table th {
-            background-color: #28a745;
-            color: white;
-        }
-        table tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-        table tr:hover {
-            background-color: #ddd;
-        }
-        .btn {
-            display: inline-block;
-            padding: 8px 12px;
-            margin: 5px;
-            color: white;
-            background-color: #28a745;
-            border: none;
-            border-radius: 4px;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .btn:hover {
-            background-color: #1e7e34;
-        }
-        .btn-delete {
-            background-color: #dc3545;
-        }
-        .btn-delete:hover {
-            background-color: #c82333;
-        }
-        .no-data {
-            text-align: center;
-            font-size: 18px;
-            margin: 20px 0;
-        }
+       body {
+    font-family: 'Poppins', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+}
+
+/* Header Styling */
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 20px 30px;
+    box-sizing: border-box;
+}
+
+.containers {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.logo a {
+    text-decoration: none;
+    font-size: 32px;
+    font-weight: 600;
+    color: #28a745;
+    display: flex;
+    align-items: center;
+}
+
+.logo img {
+    height: 40px;
+    margin-right: 10px;
+}
+
+.container {
+    margin-top: 80px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: auto;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+table th, table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+table th {
+    background-color: #28a745;
+    color: white;
+}
+
+table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+table tr:hover {
+    background-color: #ddd;
+}
+
+.btn {
+    display: inline-block;
+    padding: 8px 12px;
+    margin: 5px;
+    color: white;
+    background-color: #28a745;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: #1e7e34;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+}
+
+.btn-delete:hover {
+    background-color: #c82333;
+}
+
+.no-data {
+    text-align: center;
+    font-size: 18px;
+    margin: 20px 0;
+}
+ 
     </style>
 </head>
 <body>
-    <header>
-        <img src="logo.png" alt="Smart Diet Logo"> SmartDiet- Manage Users
-    </header>
+<header>
+    <div class="containers">
+        <div class="logo">
+            <a href="dashboard.php">
+                <img src="logo.png" alt="SmartDiet Logo"> SmartDiet
+            </a>
+        </div>
+    </div>
+</header>
+
     <div class="container">
         <h2>Registered Users</h2>
         <a href="add_user.php" class="btn">Add New User</a>

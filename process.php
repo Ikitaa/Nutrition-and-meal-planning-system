@@ -298,7 +298,6 @@ mysqli_close($conn);
     <?php endif; ?>
     <div class="buttons-container">
         <button class="button" onclick="window.location.href='dashboard.php'">Go to Dashboard</button>
-        <button class="button" onclick="window.location.href='grocery_page.php'">Grocery</button>
     </div>
     </div>
 </body>

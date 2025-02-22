@@ -115,7 +115,7 @@
         <a href="admin_dashboard.php">Dashboard</a>
         <a href="view_users.php">View Users</a>
         <a href="manage_meal_plans.php">Manage Meal Plans</a>
-        <a href="profile.php">Profile</a>
+        <a href="grocery_admin.php">Grocery List</a>
         <a href="logout.php">Logout</a>
     </div>
 
