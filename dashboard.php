@@ -333,6 +333,7 @@ $health_data_json = json_encode($health_data);
                 <li><a href="dashboard.php">Home</a></li>
                 <li><a href="plan.php">Your Plan</a></li>
                 <li><a href="Grocery.php">Grocery</a></li>
+                <li><a href="Order.php">Order Details</a></li>
             </ul>
         </nav>
         <div class="header-icons">

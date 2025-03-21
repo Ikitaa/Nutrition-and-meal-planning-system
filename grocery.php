@@ -125,6 +125,14 @@ $result = mysqli_query($conn, $sql);
     .add-to-cart:hover {
         background-color: #0056b3;
     }
+
+    .quantity-input {
+        width: 60px;
+        padding: 5px;
+        font-size: 14px;
+        border-radius: 5px;
+        margin-top: 10px;
+    }
     </style>
 </head>
 <body>
@@ -157,10 +165,12 @@ $result = mysqli_query($conn, $sql);
             echo '<img src="'.$row['image_url'].'" alt="Grocery Image">';
             echo '<h3>' . htmlspecialchars($row['title']) . '</h3>';
             echo '<p class="price">Price: Rs' . number_format($row['price'], 2) . '</p>';
-            echo '<form action="cart.php" method="POST">';
+            echo '<form action="add_to_cart.php" method="POST">';
             echo '<input type="hidden" name="grocery_id" value="'.$row['grocery_id'].'">';
             echo '<input type="hidden" name="title" value="'.htmlspecialchars($row['title']).'">';
             echo '<input type="hidden" name="price" value="'.$row['price'].'">';
+            echo '<label for="quantity">Quantity:</label>';
+            echo '<input type="number" name="quantity" class="quantity-input" value="1" min="1" required>';
             echo '<button type="submit" class="add-to-cart">Add to Cart</button>';
             echo '</form>';
             echo '</div>';

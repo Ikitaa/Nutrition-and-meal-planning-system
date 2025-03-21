@@ -29,7 +29,7 @@ $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 
 $stmt->close();
-// Handle profile update
+
 // Handle profile update
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $firstname = $_POST['firstname'];
@@ -45,12 +45,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Handle photo upload or removal
     if (isset($_FILES['photo']) && $_FILES['photo']['error'] == 0) {
         // New photo uploaded
-        $photo_url = 'uploads/' . basename($_FILES['photo']['name']);
-        move_uploaded_file($_FILES['photo']['tmp_name'], $photo_url);
+        $photo_tmp_name = $_FILES['photo']['tmp_name'];
+        $photo_name = basename($_FILES['photo']['name']);
+        $photo_url = 'uploads/' . $photo_name;
 
-        // Remove the old photo from the server if there's one
-        if ($user['photo_url'] && file_exists($user['photo_url'])) {
-            unlink($user['photo_url']);
+        // Check if the file is an image
+        $check = getimagesize($photo_tmp_name);
+        if ($check !== false) {
+            move_uploaded_file($photo_tmp_name, $photo_url);
+
+            // Remove the old photo from the server if there's one
+            if ($user['photo_url'] && file_exists($user['photo_url'])) {
+                unlink($user['photo_url']);
+            }
+        } else {
+            echo "Uploaded file is not an image.";
         }
     } elseif (isset($_POST['remove_photo'])) {
         // Remove photo and update database to NULL
@@ -143,13 +152,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         .save-btn {
-            padding: 10px 20px;
+            padding: 12px 25px;
             background-color: #28a745;
             color: white;
             border: none;
             border-radius: 5px;
             font-size: 16px;
             cursor: pointer;
+            display: block;
+            margin: 20px auto;
+        }
+
+        .save-btn:hover {
+            background-color: #218838;
         }
 
         .profile-container {
@@ -244,24 +259,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             padding: 10px 0;
             background-color: #f1f1f1;
         }
-        /* Style the save button */
-/* Style the save button */
-.save-btn {
-    padding: 12px 25px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    display: block; /* Make button block-level */
-    margin: 20px auto; /* Center the button with some space */
-}
-
-.save-btn:hover {
-    background-color: #218838;
-}
-
     </style>
 </head>
 <body>
@@ -277,30 +274,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <div class="profile-container">
     <h2>Edit Your Profile</h2>
 
-    <!-- Profile Photo -->
-    <!-- Profile Photo -->
-<!-- Profile Photo Section -->
-<div class="profile-photo">
-    <?php if ($user['photo_url']): ?>
-        <!-- Display existing photo -->
-        <img src="<?php echo htmlspecialchars($user['photo_url']); ?>" alt="Profile Photo">
-        <!-- Buttons to Change or Remove the photo -->
-        <button type="submit" name="remove_photo" class="remove-btn">Remove Photo</button>
-        <button type="button" class="upload-btn" onclick="document.getElementById('photo').click();">
-            <i class="fa fa-pencil-alt"></i> Change Photo
-        </button>
-    <?php else: ?>
-        <!-- If no photo exists, show a placeholder and option to upload a new photo -->
-        <span>No Photo</span>
-        <button type="button" class="upload-btn" onclick="document.getElementById('photo').click();">
-            <i class="fa fa-pencil-alt"></i> Upload Photo
-        </button>
-    <?php endif; ?>
+    <!-- Profile Photo Section -->
+    <div class="profile-photo">
+        <?php if ($user['photo_url']): ?>
+            <!-- Display existing photo -->
+            <img src="<?php echo htmlspecialchars($user['photo_url']); ?>" alt="Profile Photo">
+            <!-- Buttons to Change or Remove the photo -->
+            <button type="submit" name="remove_photo" class="remove-btn">Remove Photo</button>
+            <button type="button" class="upload-btn" onclick="document.getElementById('photo').click();">
+                <i class="fa fa-pencil-alt"></i> Change Photo
+            </button>
+        <?php else: ?>
+            <!-- If no photo exists, show a placeholder and option to upload a new photo -->
+            <span>No Photo</span>
+            <button type="button" class="upload-btn" onclick="document.getElementById('photo').click();">
+                <i class="fa fa-pencil-alt"></i> Upload Photo
+            </button>
+        <?php endif; ?>
 
-    <!-- Input to upload a new photo -->
-    <input type="file" name="photo" id="photo" style="display:none;">
-</div>
-
+        <!-- Input to upload a new photo -->
+        <input type="file" name="photo" id="photo" style="display:none;">
+    </div>
 
     <form action="profile.php" method="POST" id="profile-form" enctype="multipart/form-data">
         <div class="profile-info">
@@ -331,7 +325,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <label for="country">Country:</label>
             <input type="text" name="country" id="country" value="<?php echo htmlspecialchars($user['country']); ?>">
         </div>
-    <button class="save-btn" onclick="document.getElementById('profile-form').submit();">Save</button>
+        <button class="save-btn" type="submit">Save</button>
     </form>
 </div>
 

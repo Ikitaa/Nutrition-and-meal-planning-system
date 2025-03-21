@@ -1,12 +1,45 @@
+<?php
+session_start();
+
+// Check if the admin is logged in
+if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    header('Location: admin_login.php');
+    exit;
+}
+
+// Database connection
+$conn = mysqli_connect("localhost", "root", "", "smartdiet");
+
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+
+// Check if order_id is set
+if (!isset($_GET['order_id']) || empty($_GET['order_id'])) {
+    die("Error: Order ID is missing.");
+}
+
+$order_id = intval($_GET['order_id']); // Convert to integer for safety
+
+// Fetch order details
+$query = "SELECT orders.order_id, orders.user_id, orders.order_date, order_details.grocery_id, 
+                 order_details.quantity, grocery.title, grocery.price 
+          FROM orders
+          JOIN order_details ON orders.order_id = order_details.order_id
+          JOIN grocery ON order_details.grocery_id = grocery.grocery_id
+          WHERE orders.order_id = $order_id";
+
+$result = mysqli_query($conn, $query);
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartDiet - Admin</title>
-    <link rel="icon" href="logo.png" type="image/png">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Order Details</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Poppins', Arial, sans-serif;
@@ -82,45 +115,37 @@
             background-color: #28a745;
             color: #fff;
         }
-        /* Main Content Styling */
-        .main-content {
+        .container {
+            width: 90%;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
             margin-left: 270px;
-            margin-top: 70px;
-            padding: 20px;
-            width: calc(100% - 270px);
-            transition: margin-left 0.3s;
         }
-
-        .card {
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            padding: 20px;
+        h2 {
+            text-align: center;
             margin-bottom: 20px;
         }
-
-        .card h3 {
-            margin-top: 0;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
         }
-
-        .card button {
-            padding: 10px 15px;
-            font-size: 16px;
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
             background-color: #28a745;
             color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-right: 10px;
-        }
-
-        .card button:hover {
-            background-color: #218838;
         }
     </style>
 </head>
 <body>
-    <header>
+<header>
         <div class="logo">
             <a href="admin_dashboard.php">
                 <img src="logo.png" alt="Smart Diet Logo"> SmartDiet
@@ -138,21 +163,43 @@
     <a href="order_admin.php"><i class="fas fa-box-open"></i> Manage Orders</a>
     <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
 </div>
+<div class="container">
+    <h2>Order Details</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>User ID</th>
+                <th>Order Date</th>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            if (mysqli_num_rows($result) > 0) {
+                while ($row = mysqli_fetch_assoc($result)) {
+                    $total_price = $row['price'] * $row['quantity'];
+                    echo "<tr>";
+                    echo "<td>" . $row['order_id'] . "</td>";
+                    echo "<td>" . $row['user_id'] . "</td>";
+                    echo "<td>" . $row['order_date'] . "</td>";
+                    echo "<td>" . $row['title'] . "</td>";
+                    echo "<td>" . $row['quantity'] . "</td>";
+                    echo "<td>Rs " . number_format($row['price'], 2) . "</td>";
+                    echo "<td>Rs " . number_format($total_price, 2) . "</td>";
+                    echo "</tr>";
+                }
+            } else {
+                echo "<tr><td colspan='7' style='text-align: center;'>No details found.</td></tr>";
+            }
+            ?>
+        </tbody>
+    </table>
+</div>
 
-
-    <div class="main-content" id="main-content">
-        <div class="card">
-            <h3>Welcome to the Admin Dashboard</h3>
-        </div>
-
-        <div class="card">
-            <h3>Quick Actions</h3>
-            <div>
-                <button onclick="window.location.href='view_users.php'">View Users</button>
-                <button onclick="window.location.href='manage_meal_plans.php'">Manage Meal Plans</button>
-                <button onclick="window.location.href='grocery_admin.php'">Grocery List</button>
-            </div>
-        </div>
-    </div>
+<?php mysqli_close($conn); ?>
 </body>
 </html>

@@ -36,33 +36,9 @@ while ($row = $result->fetch_assoc()) {
 }
 
 $stmt->close();
-// Insert meal plans if they exist
-if (!empty($meals)) {
-    $insert_query = "INSERT INTO user_meal_plan (user_id, meal_id, meal_category, meal_description, photo_url) VALUES (?, ?, ?, ?, ?)";
-    $stmt = $conn->prepare($insert_query);
-    
-    if (!$stmt) {
-        die("Failed to prepare insert statement: " . $conn->error);
-    }
-
-    foreach ($meals as $meal) {
-        $meal_id = $meal['meal_id']; 
-        $meal_category = $meal['meal_category'];
-        $meal_description = $meal['meal_description'];
-        $photo_url = $meal['photo_url'];
-
-        $stmt->bind_param('iisss', $user_id, $meal_id, $meal_category, $meal_description, $photo_url);
-        $stmt->execute();
-    }
-
-    $stmt->close();
-    echo "Meal plans saved successfully!";
-} else {
-    die("No meal plans available.");
-}
-
 $conn->close();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -92,7 +68,8 @@ $conn->close();
             align-items: center;
             flex-wrap: wrap;
         }
-        .logo a {  text-decoration: none;
+        .logo a {  
+            text-decoration: none;
             font-size: 32px;
             font-weight: 600;
             color: #28a745;
@@ -149,6 +126,48 @@ $conn->close();
             font-size: 16px;
             color: #555;
         }
+        .edit-meal-btn {
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .edit-meal-btn:hover {
+            background-color: #0056b3;
+        }
+        .update-form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .update-form form {
+            background-color: #f4f4f4;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+        }
+        .update-form button {
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .update-form button:hover {
+            background-color: #45a049;
+        }
+        .update-form button:focus {
+            outline: none;
+        }
     </style>
 </head>
 <body>
@@ -161,16 +180,24 @@ $conn->close();
             </div>
         </div>
     </header>
+
     <main>
         <div class="meal-container">
+            <!-- Edit Meal Plan Button -->
+            <div style="text-align: left; margin-bottom: 20px;">
+                <a href="edit_meal_plan.php">
+                    <button class="edit-meal-btn">Edit Meal Plan</button>
+                </a>
+            </div>
+            
             <h2>Your Meal Plan</h2>
             <div class="meal-row">
                 <?php 
-                $categories = ['Breakfast','Lunch','Dinner'];
+                $categories = ['Breakfast', 'Lunch', 'Dinner'];
                 foreach ($categories as $category) {
                     echo "<div class='meal'>";
                     echo "<h3>" . htmlspecialchars($category) . "</h3>";
-                    if(isset($meals[$category])) {
+                    if (isset($meals[$category])) {
                         echo "<p>" . htmlspecialchars($meals[$category]['meal_description']) . "</p>";
                         if (!empty($meals[$category]['photo_url'])) {
                             echo "<img src='meals/" . htmlspecialchars($meals[$category]['photo_url']) . "' alt='$category Meal'>";
@@ -184,50 +211,5 @@ $conn->close();
             </div>
         </div>
     </main>
-    <div class="update-form">
-    <form action="update_process.php" method="POST">
-        <fieldset>
-            <legend>Update Your Meal Plan</legend>
-            <div class="group-field">
-                <div class="input">
-                    <label for="age">Age</label>
-                    <input type="number" id="age" name="age" min="1" max="120" required>
-                </div>
-                <div class="input">
-                    <label for="weight">Choose your weight goal</label>
-                    <select id="weight" name="weight" required>
-                        <option value="">Choose your weight goal</option>
-                        <option value="loss">Weight loss</option>
-                        <option value="gain">Weight Gain</option>
-                        <option value="maintain">Maintain Weight</option>
-                    </select>
-                </div>
-                <div class="input">
-                    <label for="diet">Dietary Preferences</label>
-                    <select id="diet" name="diet" required>
-                        <option value="">Choose Your Dietary Preferences</option>
-                        <option value="anything">Anything</option>
-                        <option value="vegetarian">Vegetarian</option>
-                        <option value="non-vegetarian">Non-Vegetarian</option>
-                    </select>
-                </div>
-                <div class="input">
-                    <label for="disease">Disease/Condition:</label>
-                    <select id="disease" name="disease" required>
-                        <option value="">Choose if any Disease</option>
-                        <option value="none">None</option>
-                        <option value="hypertension">Hypertension</option>
-                        <option value="gastritis">Gastritis</option>
-                        <option value="diabetes">Diabetes</option>
-                    </select>
-                </div>
-                <div class="input">
-                    <button type="submit">Update Meal Plan</button>
-                </div>
-            </div>
-        </fieldset>
-    </form>
-    </div>
 </body>
 </html>
-

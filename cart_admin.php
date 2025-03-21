@@ -1,36 +1,24 @@
 <?php
-// Database connection
-$connection = new mysqli('localhost', 'root', '', 'smartdiet');
+session_start();
 
-if ($connection->connect_error) {
-    die("Connection failed: " . $connection->connect_error);
+// Check if the admin is logged in
+if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    header('Location: admin_login.php');
+    exit;
 }
 
-// Delete operation
-if (isset($_GET['delete_id'])) {
-    $deleteId = $_GET['delete_id'];
+$conn = mysqli_connect("localhost", "root", "", "smartdiet");
 
-    // Delete related records in user_meal_plan table first
-    $deleteUserMealPlanQuery = "DELETE FROM user_meal_plan WHERE user_id = ?";
-    $stmt = $connection->prepare($deleteUserMealPlanQuery);
-    $stmt->bind_param("i", $deleteId);
-    $stmt->execute();
-    $stmt->close();
-
-    // Now delete the user from the register table
-    $deleteQuery = "DELETE FROM register WHERE id = ?";
-    $stmt = $connection->prepare($deleteQuery);
-    $stmt->bind_param("i", $deleteId);
-    $stmt->execute();
-    $stmt->close();
-
-    header("Location: view_users.php");
-    exit();
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
 }
 
-// Fetch users from the database
-$sql = "SELECT * FROM register";
-$result = $connection->query($sql);
+// Query to get all items in users' carts
+$query = "SELECT cart.cart_id, cart.user_id, cart.grocery_id, grocery.title, cart.quantity, grocery.price
+          FROM cart
+          JOIN grocery ON cart.grocery_id = grocery.grocery_id
+          ORDER BY cart.user_id";
+$result = mysqli_query($conn, $query);
 ?>
 
 <!DOCTYPE html>
@@ -38,7 +26,7 @@ $result = $connection->query($sql);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartDiet - View Users</title>
+    <title>Admin - Manage Carts</title>
     <link rel="icon" href="logo.png" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -125,7 +113,7 @@ $result = $connection->query($sql);
             width: calc(100% - 270px);
         }
 
-        .container h2 {
+        h2 {
             text-align: center;
             margin-bottom: 30px;
         }
@@ -207,56 +195,46 @@ $result = $connection->query($sql);
 </div>
 
 
-
     <div class="container">
-        <h2>Registered Users</h2>
-        <a href="add_user.php" class="btn">Add New User</a>
+        <h2>User Cart</h2>
 
-        <?php if ($result && $result->num_rows > 0): ?>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Email</th>
-                        <th>Phone Number</th>
-                        <th>Date of Birth</th>
-                        <th>Address</th>
-                        <th>Gender</th>
-                        <th>Country</th>
-                        <th>Username</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php while ($row = $result->fetch_assoc()): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($row['id']); ?></td>
-                            <td><?php echo htmlspecialchars($row['Firstname']); ?></td>
-                            <td><?php echo htmlspecialchars($row['Lastname']); ?></td>
-                            <td><?php echo htmlspecialchars($row['email']); ?></td>
-                            <td><?php echo htmlspecialchars($row['phonenumber']); ?></td>
-                            <td><?php echo htmlspecialchars($row['dateofbirth']); ?></td>
-                            <td><?php echo htmlspecialchars($row['address']); ?></td>
-                            <td><?php echo htmlspecialchars($row['gender']); ?></td>
-                            <td><?php echo htmlspecialchars($row['country']); ?></td>
-                            <td><?php echo htmlspecialchars($row['username']); ?></td>
-                            <td>
-                                <a href="edit_user.php?id=<?php echo $row['id']; ?>" class="btn">Edit</a>
-                                <a href="?delete_id=<?php echo $row['id']; ?>" class="btn btn-delete" onclick="return confirm('Are you sure you want to delete this user?')">Delete</a>
-                            </td>
-                        </tr>
-                    <?php endwhile; ?>
-                </tbody>
-            </table>
-        <?php else: ?>
-            <p class="no-data">No users found.</p>
-        <?php endif; ?>
+        <table>
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                if (mysqli_num_rows($result) > 0) {
+                    while ($row = mysqli_fetch_assoc($result)) {
+                        $total_price = $row['price'] * $row['quantity'];
+                        echo "<tr>";
+                        echo "<td>" . $row['user_id'] . "</td>";
+                        echo "<td>" . $row['title'] . "</td>";
+                        echo "<td>" . $row['quantity'] . "</td>";
+                        echo "<td>Rs" . number_format($row['price'], 2) . "</td>";
+                        echo "<td>Rs" . number_format($total_price, 2) . "</td>";
+                        echo "<td><a href='remove_from_cart.php?id=" . $row['cart_id'] . "' class='btn btn-delete' onclick='return confirm(\"Are you sure you want to remove this item?\")'>Remove</a></td>";
+                        echo "</tr>";
+                    }
+                } else {
+                    echo "<tr><td colspan='6' class='no-data'>No items in cart.</td></tr>";
+                }
+                ?>
+            </tbody>
+        </table>
+
+        
     </div>
+
+    <?php
+    mysqli_close($conn);
+    ?>
 </body>
 </html>
-
-<?php
-$connection->close();
-?>

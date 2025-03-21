@@ -1,46 +1,36 @@
 <?php
 session_start();
+$conn = mysqli_connect("localhost", "root", "", "smartdiet");
 
-// Check if cart is empty
-if (!isset($_SESSION["cart"]) || empty($_SESSION["cart"])) {
-    $empty_cart = true;
-} else {
-    $empty_cart = false;
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
 }
 
-// Remove item from cart
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['remove_item'])) {
-    $grocery_id = $_POST['grocery_id'];
-
-    // Remove the item from the cart
-    foreach ($_SESSION["cart"] as $key => $item) {
-        if ($item["grocery_id"] == $grocery_id) {
-            unset($_SESSION["cart"][$key]);
-            break;
-        }
-    }
-
-    // Re-index the cart array after item removal
-    $_SESSION["cart"] = array_values($_SESSION["cart"]);
-    header("Location: view_cart.php");
+// Ensure user authentication
+if (!isset($_SESSION["user_id"])) {
+    header("Location: login.php");
     exit();
 }
 
-// Update item quantity
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_quantity'])) {
-    $grocery_id = $_POST['grocery_id'];
-    $quantity = $_POST['quantity'];
+$user_id = $_SESSION["user_id"];
 
-    // Update the quantity of the item
-    foreach ($_SESSION["cart"] as &$item) {
-        if ($item["grocery_id"] == $grocery_id) {
-            $item["quantity"] = $quantity;
-            break;
-        }
-    }
-    header("Location: view_cart.php");
-    exit();
+// Prepare query to get cart details with grocery item information and status
+$query = "SELECT cart.*, grocery.title, grocery.price, grocery.image_url FROM cart
+          JOIN grocery ON cart.grocery_id = grocery.grocery_id
+          WHERE cart.user_id = ?";
+$stmt = mysqli_prepare($conn, $query);
+
+if ($stmt === false) {
+    die("Error preparing the query: " . mysqli_error($conn));
 }
+
+mysqli_stmt_bind_param($stmt, "i", $user_id);
+
+if (!mysqli_stmt_execute($stmt)) {
+    die("Error executing the query: " . mysqli_stmt_error($stmt));
+}
+
+$result = mysqli_stmt_get_result($stmt);
 ?>
 
 <!DOCTYPE html>
@@ -48,14 +38,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_quantity'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartDiet - View Cart</title>
-    <link rel="icon" href="logo.png" type="image/png">
+    <title>View Cart</title>
     <style>
         body {
-            margin: 0;
             font-family: 'Poppins', Arial, sans-serif;
-            padding-top: 30px; /* Ensure content starts below the fixed header */
+            text-align: center;
+            margin: 0;
+            padding-top: 100px;
         }
+
         header {
             position: fixed;
             top: 0;
@@ -64,163 +55,177 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_quantity'])) {
             z-index: 1000;
             background-color: #fff;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            padding: 20px 30px;
+            padding: 10px 20px;
             box-sizing: border-box;
         }
-        .container {
+        .header-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
+            padding: 10px 20px;
         }
         .logo a {
+            display: flex;
+            align-items: center;
             text-decoration: none;
             font-size: 32px;
             font-weight: 600;
             color: #28a745;
-            display: flex;
-            align-items: center;
         }
-        .logo img {
-            height: 40px;
-            margin-right: 10px;
-        }
-        .cart-table {
-    width: 100%;
-    margin: 20px auto;
-    border-collapse: collapse;
-    margin-top: 60px; /* Ensure it's spaced below the header */
-}
 
-        .cart-table, th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
+        .logo img {
+            max-height: 50px;
+            width: auto;
+            margin-right: 10px;
+            vertical-align: middle;
         }
+        /* Table Styling */
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
         th {
             background-color: #28a745;
             color: white;
+            font-weight: bold;
         }
-        td {
-            text-align: center;
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
         }
-        td img {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
+
+        tr:hover {
+            background-color: #ddd;
         }
-        .cart-table .remove-button {
-            padding: 8px 15px;
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+
+        td a {
+            text-decoration: none;
+            color: #dc3545;
+            font-weight: bold;
         }
-        .cart-table .remove-button:hover {
-            background-color: #c82333;
+
+        td a:hover {
+            color: #c82333;
+            text-decoration: underline;
         }
-        .cart-table .update-button {
-            padding: 8px 15px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .cart-table .update-button:hover {
-            background-color: #0056b3;
-        }
-        .total-price {
-            font-size: 20px;
-            text-align: right;
-            margin: 20px;
-        }
-        .checkout-button {
-            padding: 10px 20px;
+
+        /* Proceed to Checkout Button */
+        .checkout-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 18px;
             background-color: #28a745;
             color: white;
-            border: none;
+            text-decoration: none;
             border-radius: 5px;
+            font-weight: bold;
+            border: none;
             cursor: pointer;
             font-size: 16px;
-            width: 200px;
-            margin: 0 auto;
-            display: block;
-            margin-top: 10px;
+            transition: background 0.3s ease-in-out, transform 0.2s;
         }
-        .checkout-button:hover {
+
+        .checkout-btn:hover {
             background-color: #218838;
+            transform: scale(1.05);
         }
+
+        /* Status Styling */
+        .status-pending {
+            color: orange;
+            font-weight: bold;
+        }
+        .status-confirmed {
+            color: blue;
+            font-weight: bold;
+        }
+        .status-shipped {
+            color: green;
+            font-weight: bold;
+        }
+        .status-canceled {
+            color: red;
+            font-weight: bold;
+        }
+
     </style>
 </head>
 <body>
-
 <header>
-    <div class="container">
+    <div class="header-container">
         <div class="logo">
             <a href="dashboard.php">
-                <img src="logo.png" alt="Smart Diet Logo"> SmartDiet
+                <img src="logo.png" alt="Smart Diet Logo" width="50"> SmartDiet
             </a>
         </div>
     </div>
 </header>
-
-<!-- Cart Table -->
-<table class="cart-table">
-    <thead>
-        <tr>
-            <th>Grocery ID</th>
-            <th>Title</th>
-            <th>Price</th>
-            <th>Quantity</th>
-            <th>Subtotal</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php if ($empty_cart): ?>
+    <h2>Your Shopping Cart</h2>
+    <table>
+        <thead>
             <tr>
-                <td colspan="6">Your cart is empty.</td>
+                <th>Item</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Action</th>
             </tr>
-        <?php else: ?>
+        </thead>
+        <tbody>
             <?php
-            $total_price = 0;
-            foreach ($_SESSION["cart"] as $item):
-                $subtotal = $item["price"] * $item["quantity"];
-                $total_price += $subtotal;
+            if (mysqli_num_rows($result) > 0) {
+                while ($row = mysqli_fetch_assoc($result)) {
+                    echo "<tr>";
+                    echo "<td>" . htmlspecialchars($row['title']) . "</td>";
+                    echo "<td>Rs" . number_format($row['price'], 2) . "</td>";
+                    echo "<td>" . $row['quantity'] . "</td>";
+                    echo "<td>Rs" . number_format($row['price'] * $row['quantity'], 2) . "</td>";
+
+                    // Display the status based on the value in the 'status' column
+                    switch ($row['status']) {
+                        case 'Confirmed':
+                            echo "<td class='status-confirmed'>Confirmed</td>";
+                            break;
+                        case 'Shipped':
+                            echo "<td class='status-shipped'>Shipped</td>";
+                            break;
+                        case 'Canceled':
+                            echo "<td class='status-canceled'>Canceled</td>";
+                            break;
+                        default:
+                            echo "<td class='status-pending'>Pending</td>";
+                            break;
+                    }
+
+                    echo "<td><a href='remove_from_cart.php?id=" . $row['cart_id'] . "'>Remove</a></td>";
+                    echo "</tr>";
+                }
+            } else {
+                echo "<tr><td colspan='6'>Your cart is empty.</td></tr>";
+            }
             ?>
-                <tr>
-                    <td><?= htmlspecialchars($item["grocery_id"]) ?></td>
-                    <td><?= htmlspecialchars($item["title"]) ?></td>
-                    <td><?= htmlspecialchars($item["price"]) ?></td>
-                    <td>
-                        <form action="view_cart.php" method="POST" style="display:inline;">
-                            <input type="number" name="quantity" value="<?= $item["quantity"] ?>" min="1" required>
-                            <input type="hidden" name="grocery_id" value="<?= $item["grocery_id"] ?>">
-                            <button type="submit" name="update_quantity" class="update-button">Update</button>
-                        </form>
-                    </td>
-                    <td><?= $subtotal ?></td>
-                    <td>
-                        <form action="view_cart.php" method="POST" style="display:inline;">
-                            <input type="hidden" name="grocery_id" value="<?= $item["grocery_id"] ?>">
-                            <button type="submit" name="remove_item" class="remove-button">Remove</button>
-                        </form>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        <?php endif; ?>
-    </tbody>
-</table>
+        </tbody>
+    </table>
 
-<?php if (!$empty_cart): ?>
-    <div class="total-price">
-        <p>Total: $<?= number_format($total_price, 2) ?></p>
-    </div>
-    <form action="checkout.php" method="GET">
-        <button type="submit" class="checkout-button">Proceed to Checkout</button>
-    </form>
-<?php endif; ?>
+    <a href="checkout_form.php" class="checkout-btn">Proceed to Checkout</a>
 
+    <?php
+    mysqli_stmt_close($stmt);
+    mysqli_close($conn);
+    ?>
 </body>
 </html>
