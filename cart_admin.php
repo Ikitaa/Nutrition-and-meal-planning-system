@@ -14,7 +14,7 @@ if (!$conn) {
 }
 
 // Query to get all items in users' carts
-$query = "SELECT cart.cart_id, cart.user_id, cart.grocery_id, grocery.title, cart.quantity, grocery.price
+$query = "SELECT cart.cart_id, cart.user_id, cart.grocery_id, grocery.title, cart.quantity, grocery.price, cart.status
           FROM cart
           JOIN grocery ON cart.grocery_id = grocery.grocery_id
           ORDER BY cart.user_id";
@@ -31,7 +31,7 @@ $result = mysqli_query($conn, $query);
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
-        body {
+       body {
             font-family: 'Poppins', Arial, sans-serif;
             margin: 0;
             display: flex;
@@ -161,9 +161,7 @@ $result = mysqli_query($conn, $query);
 
         .btn-delete {
             background-color: #dc3545;
-        }
-
-        .btn-delete:hover {
+        }.btn-delete:hover {
             background-color: #c82333;
         }
 
@@ -176,14 +174,14 @@ $result = mysqli_query($conn, $query);
 </head>
 <body>
 <header>
-        <div class="logo">
-            <a href="admin_dashboard.php">
-                <img src="logo.png" alt="Smart Diet Logo"> SmartDiet
-            </a>
-        </div>
-    </header>
+    <div class="logo">
+        <a href="admin_dashboard.php">
+            <img src="logo.png" alt="Smart Diet Logo"> SmartDiet
+        </a>
+    </div>
+</header>
 
-    <div class="sidebar">
+<div class="sidebar">
     <h2>Admin Panel</h2>
     <a href="admin_dashboard.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
     <a href="view_users.php"><i class="fas fa-users"></i> View Users</a>
@@ -194,47 +192,46 @@ $result = mysqli_query($conn, $query);
     <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
 </div>
 
+<div class="container">
+    <h2>User Cart</h2>
 
-    <div class="container">
-        <h2>User Cart</h2>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>User ID</th>
-                    <th>Item</th>
-                    <th>Quantity</th>
-                    <th>Price</th>
-                    <th>Total</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                if (mysqli_num_rows($result) > 0) {
-                    while ($row = mysqli_fetch_assoc($result)) {
-                        $total_price = $row['price'] * $row['quantity'];
-                        echo "<tr>";
-                        echo "<td>" . $row['user_id'] . "</td>";
-                        echo "<td>" . $row['title'] . "</td>";
-                        echo "<td>" . $row['quantity'] . "</td>";
-                        echo "<td>Rs" . number_format($row['price'], 2) . "</td>";
-                        echo "<td>Rs" . number_format($total_price, 2) . "</td>";
-                        echo "<td><a href='remove_from_cart.php?id=" . $row['cart_id'] . "' class='btn btn-delete' onclick='return confirm(\"Are you sure you want to remove this item?\")'>Remove</a></td>";
-                        echo "</tr>";
-                    }
-                } else {
-                    echo "<tr><td colspan='6' class='no-data'>No items in cart.</td></tr>";
+    <table>
+        <thead>
+            <tr>
+                <th>User ID</th>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+                <th>Status</th> <!-- Added column for status -->
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            if (mysqli_num_rows($result) > 0) {
+                while ($row = mysqli_fetch_assoc($result)) {
+                    $total_price = $row['price'] * $row['quantity'];
+                    echo "<tr>";
+                    echo "<td>" . $row['user_id'] . "</td>";
+                    echo "<td>" . $row['title'] . "</td>";
+                    echo "<td>" . $row['quantity'] . "</td>";
+                    echo "<td>Rs" . number_format($row['price'], 2) . "</td>";
+                    echo "<td>Rs" . number_format($total_price, 2) . "</td>";
+                    echo "<td>" . ucfirst($row['status']) . "</td>";  // Display the status
+                    echo "<td><a href='remove_from_cart.php?id=" . $row['cart_id'] . "' class='btn btn-delete' onclick='return confirm(\"Are you sure you want to remove this item?\")'>Remove</a></td>";
+                    echo "</tr>";
                 }
-                ?>
-            </tbody>
-        </table>
+            } else {
+                echo "<tr><td colspan='7' class='no-data'>No items in cart.</td></tr>";
+            }
+            ?>
+        </tbody>
+    </table>
+</div>
 
-        
-    </div>
-
-    <?php
-    mysqli_close($conn);
-    ?>
+<?php
+mysqli_close($conn);
+?>
 </body>
 </html>

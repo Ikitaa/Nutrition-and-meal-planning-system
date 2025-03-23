@@ -14,8 +14,9 @@ if (!isset($_SESSION["user_id"])) {
 
 $user_id = $_SESSION["user_id"];
 
-// Prepare query to get cart details with grocery item information and status
-$query = "SELECT cart.*, grocery.title, grocery.price, grocery.image_url FROM cart
+// Prepare query to get cart details with grocery item information
+$query = "SELECT cart.*, grocery.title, grocery.price, grocery.image_url 
+          FROM cart
           JOIN grocery ON cart.grocery_id = grocery.grocery_id
           WHERE cart.user_id = ?";
 $stmt = mysqli_prepare($conn, $query);
@@ -80,6 +81,7 @@ $result = mysqli_stmt_get_result($stmt);
             margin-right: 10px;
             vertical-align: middle;
         }
+
         /* Table Styling */
         table {
             width: 80%;
@@ -148,19 +150,6 @@ $result = mysqli_stmt_get_result($stmt);
             color: orange;
             font-weight: bold;
         }
-        .status-confirmed {
-            color: blue;
-            font-weight: bold;
-        }
-        .status-shipped {
-            color: green;
-            font-weight: bold;
-        }
-        .status-canceled {
-            color: red;
-            font-weight: bold;
-        }
-
     </style>
 </head>
 <body>
@@ -173,59 +162,51 @@ $result = mysqli_stmt_get_result($stmt);
         </div>
     </div>
 </header>
-    <h2>Your Shopping Cart</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Item</th>
-                <th>Price</th>
-                <th>Quantity</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php
-            if (mysqli_num_rows($result) > 0) {
-                while ($row = mysqli_fetch_assoc($result)) {
-                    echo "<tr>";
-                    echo "<td>" . htmlspecialchars($row['title']) . "</td>";
-                    echo "<td>Rs" . number_format($row['price'], 2) . "</td>";
-                    echo "<td>" . $row['quantity'] . "</td>";
-                    echo "<td>Rs" . number_format($row['price'] * $row['quantity'], 2) . "</td>";
 
-                    // Display the status based on the value in the 'status' column
-                    switch ($row['status']) {
-                        case 'Confirmed':
-                            echo "<td class='status-confirmed'>Confirmed</td>";
-                            break;
-                        case 'Shipped':
-                            echo "<td class='status-shipped'>Shipped</td>";
-                            break;
-                        case 'Canceled':
-                            echo "<td class='status-canceled'>Canceled</td>";
-                            break;
-                        default:
-                            echo "<td class='status-pending'>Pending</td>";
-                            break;
-                    }
+<h2>Your Shopping Cart</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Item</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php
+        $cartNotEmpty = false; // Flag to check if cart has items
 
-                    echo "<td><a href='remove_from_cart.php?id=" . $row['cart_id'] . "'>Remove</a></td>";
-                    echo "</tr>";
-                }
-            } else {
-                echo "<tr><td colspan='6'>Your cart is empty.</td></tr>";
+        if (mysqli_num_rows($result) > 0) {
+            $cartNotEmpty = true; // Cart is not empty
+
+            while ($row = mysqli_fetch_assoc($result)) {
+                echo "<tr>";
+                echo "<td>" . htmlspecialchars($row['title']) . "</td>";
+                echo "<td>Rs" . number_format($row['price'], 2) . "</td>";
+                echo "<td>" . $row['quantity'] . "</td>";
+                echo "<td>Rs" . number_format($row['price'] * $row['quantity'], 2) . "</td>";
+                echo "<td class='status-pending'>Pending</td>";
+                echo "<td><a href='remove_from_cart.php?id=" . $row['cart_id'] . "'>Remove</a></td>";
+                echo "</tr>";
             }
-            ?>
-        </tbody>
-    </table>
+        } else {
+            echo "<tr><td colspan='6'>Your cart is empty.</td></tr>";
+        }
+        ?>
+    </tbody>
+</table>
 
+<!-- Show "Proceed to Checkout" button only if cart is not empty -->
+<?php if ($cartNotEmpty): ?>
     <a href="checkout_form.php" class="checkout-btn">Proceed to Checkout</a>
+<?php endif; ?>
 
-    <?php
-    mysqli_stmt_close($stmt);
-    mysqli_close($conn);
-    ?>
+<?php
+mysqli_stmt_close($stmt);
+mysqli_close($conn);
+?>
 </body>
 </html>

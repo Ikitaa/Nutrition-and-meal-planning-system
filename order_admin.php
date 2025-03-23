@@ -14,9 +14,9 @@ if (!$conn) {
     die("Connection failed: " . mysqli_connect_error());
 }
 
-// Query to get all orders
-$query = "SELECT orders.order_id, orders.user_id, orders.order_date, order_details.grocery_id, 
-                 order_details.quantity, grocery.title, grocery.price 
+// Query to get all orders with status
+$query = "SELECT orders.order_id, orders.user_id, orders.order_date, orders.status, 
+                 order_details.grocery_id, order_details.quantity, grocery.title, grocery.price 
           FROM orders
           JOIN order_details ON orders.order_id = order_details.order_id
           JOIN grocery ON order_details.grocery_id = grocery.grocery_id
@@ -31,7 +31,6 @@ $result = mysqli_query($conn, $query);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Manage Orders</title>
-    <!-- Link to Google Fonts for Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
@@ -111,13 +110,15 @@ $result = mysqli_query($conn, $query);
         }
         /* Main Container */
         .container {
-            width: 90%;
-            margin: 50px auto;
-            padding: 20px;
-            background: white;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            border-radius: 5px;
-        }
+    width: 90%;
+    margin: 50px auto;
+    padding: 20px;
+    background: white;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    margin-left: 280px; /* Add this line to move the table slightly to the right */
+}
+
 
         h2 {
             text-align: center;
@@ -169,9 +170,9 @@ $result = mysqli_query($conn, $query);
                 <img src="logo.png" alt="Smart Diet Logo"> SmartDiet
             </a>
         </div>
-    </header>
+</header>
 
-    <div class="sidebar">
+<div class="sidebar">
     <h2>Admin Panel</h2>
     <a href="admin_dashboard.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
     <a href="view_users.php"><i class="fas fa-users"></i> View Users</a>
@@ -181,6 +182,7 @@ $result = mysqli_query($conn, $query);
     <a href="order_admin.php"><i class="fas fa-box-open"></i> Manage Orders</a>
     <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
 </div>
+
 <div class="container">
     <h2>Manage Orders</h2>
     <table>
@@ -193,6 +195,7 @@ $result = mysqli_query($conn, $query);
                 <th>Quantity</th>
                 <th>Price</th>
                 <th>Total</th>
+                <th>Status</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -202,26 +205,36 @@ $result = mysqli_query($conn, $query);
                 while ($row = mysqli_fetch_assoc($result)) {
                     $total_price = $row['price'] * $row['quantity'];
                     echo "<tr>";
-                    echo "<td>" . $row['order_id'] . "</td>";
-                    echo "<td>" . $row['user_id'] . "</td>";
-                    echo "<td>" . $row['order_date'] . "</td>";
-                    echo "<td>" . $row['title'] . "</td>";
-                    echo "<td>" . $row['quantity'] . "</td>";
+                    echo "<td>{$row['order_id']}</td>";
+                    echo "<td>{$row['user_id']}</td>";
+                    echo "<td>{$row['order_date']}</td>";
+                    echo "<td>{$row['title']}</td>";
+                    echo "<td>{$row['quantity']}</td>";
                     echo "<td>Rs " . number_format($row['price'], 2) . "</td>";
                     echo "<td>Rs " . number_format($total_price, 2) . "</td>";
                     echo "<td>
-                            <a href='orderdetails_admin.php?order_id=" . $row['order_id'] . "' class='btn btn-details'>View Details</a>
-                            <a href='remove_order.php?id=" . $row['order_id'] . "' class='btn btn-delete' onclick='return confirm(\"Are you sure you want to cancel this order?\")'>Cancel</a>
+                            <form action='update_order_status.php' method='POST'>
+                                <input type='hidden' name='order_id' value='{$row['order_id']}'>
+                                <select name='status' onchange='this.form.submit()' style='font-family: Poppins, Arial, sans-serif;'>
+                                    <option " . ($row['status'] == 'Confirmed' ? 'selected' : '') . ">Confirmed</option>
+                                    <option " . ($row['status'] == 'Shipped' ? 'selected' : '') . ">Shipped</option>
+                                    <option " . ($row['status'] == 'Delivered' ? 'selected' : '') . ">Delivered</option>
+                                    <option " . ($row['status'] == 'Canceled' ? 'selected' : '') . ">Canceled</option>
+                                </select>
+                            </form>
                           </td>";
+                    echo "<td><a href='orderdetails_admin.php?order_id=" . $row['order_id'] . "' class='btn btn-details'>View Details</a></td>";
                     echo "</tr>";
                 }
             } else {
-                echo "<tr><td colspan='8' style='text-align: center;'>No orders placed yet.</td></tr>";
+                echo "<tr><td colspan='9' style='text-align: center;'>No orders placed yet.</td></tr>";
             }
-            ?>
-        </tbody>
-    </table>
-</div>
-<?php mysqli_close($conn); ?>
-</body>
-</html>
+            
+              ?>
+          </tbody>
+      </table>
+  </div>
+  <?php mysqli_close($conn); ?>
+  </body>
+  </html>
+  
