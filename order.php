@@ -176,7 +176,7 @@ td span {
             <?php while ($row = $result->fetch_assoc()): ?>
                 <tr>
                     <td><?php echo $row['order_id']; ?></td>
-                    <td>$<?php echo number_format($row['total_price'], 2); ?></td>
+                    <td>Rs<?php echo number_format($row['total_price'], 2); ?></td>
                     <td><?php echo ucfirst($row['payment_method']); ?></td>
                     <td><?php echo $row['order_date']; ?></td>
                     <td>

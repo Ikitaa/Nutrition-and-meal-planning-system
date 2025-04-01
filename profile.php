@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 // Database connection
@@ -27,7 +28,6 @@ $stmt->bind_param('i', $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $user = $result->fetch_assoc();
-
 $stmt->close();
 
 // Handle profile update
@@ -52,6 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Check if the file is an image
         $check = getimagesize($photo_tmp_name);
         if ($check !== false) {
+            // Move the uploaded file to the uploads folder
             move_uploaded_file($photo_tmp_name, $photo_url);
 
             // Remove the old photo from the server if there's one
@@ -88,7 +89,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     exit();
 }
 
+
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -98,6 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link rel="icon" href="logo.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
+        /* Your existing CSS here */
         body {
             font-family: 'Poppins', Arial, sans-serif;
             margin: 0;
@@ -325,13 +329,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <label for="country">Country:</label>
             <input type="text" name="country" id="country" value="<?php echo htmlspecialchars($user['country']); ?>">
         </div>
-        <button class="save-btn" type="submit">Save</button>
+
+        <button type="submit" class="save-btn">Save Changes</button>
     </form>
 </div>
 
 <footer>
-    <p>&copy; 2025 SmartDiet. All rights reserved.</p>
+    <p>&copy; 2025 SmartDiet</p>
 </footer>
 
 </body>
 </html>
+

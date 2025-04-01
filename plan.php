@@ -45,6 +45,7 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SmartDiet - MealPlan</title>
+    <link rel="icon" href="logo.png" type="image/png">
     <style>
         body {
             margin: 0;

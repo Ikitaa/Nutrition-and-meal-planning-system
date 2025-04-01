@@ -38,6 +38,7 @@ $result = mysqli_query($conn, $query);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Details</title>
+    <link rel="icon" href="logo.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -159,7 +160,6 @@ $result = mysqli_query($conn, $query);
     <a href="view_users.php"><i class="fas fa-users"></i> View Users</a>
     <a href="manage_meal_plans.php"><i class="fas fa-utensils"></i> Manage Meal Plans</a>
     <a href="grocery_admin.php"><i class="fas fa-list-alt"></i> Grocery List</a>
-    <a href="cart_admin.php"><i class="fas fa-cart-arrow-down"></i> Manage Cart</a>
     <a href="order_admin.php"><i class="fas fa-box-open"></i> Manage Orders</a>
     <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
 </div>

@@ -165,13 +165,13 @@ td:last-child, th:last-child {
                 <tr>
                     <td><?php echo $row['grocery_name']; ?></td>
                     <td><?php echo $row['quantity']; ?></td>
-                    <td>$<?php echo number_format($row['price'], 2); ?></td>
-                    <td>$<?php echo number_format($total, 2); ?></td>
+                    <td>Rs<?php echo number_format($row['price'], 2); ?></td>
+                    <td>Rs<?php echo number_format($total, 2); ?></td>
                 </tr>
             <?php endwhile; ?>
             <tr>
                 <td colspan="3" align="right"><strong>Total Price:</strong></td>
-                <td><strong>$<?php echo number_format($total_price, 2); ?></strong></td>
+                <td><strong>Rs<?php echo number_format($total_price, 2); ?></strong></td>
             </tr>
         </table>
     <?php else: ?>

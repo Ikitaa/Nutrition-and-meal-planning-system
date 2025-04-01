@@ -201,7 +201,6 @@ $result = $connection->query($sql);
     <a href="view_users.php"><i class="fas fa-users"></i> View Users</a>
     <a href="manage_meal_plans.php"><i class="fas fa-utensils"></i> Manage Meal Plans</a>
     <a href="grocery_admin.php"><i class="fas fa-list-alt"></i> Grocery List</a>
-    <a href="cart_admin.php"><i class="fas fa-cart-arrow-down"></i> Manage Cart</a>
     <a href="order_admin.php"><i class="fas fa-box-open"></i> Manage Orders</a>
     <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
 </div>
